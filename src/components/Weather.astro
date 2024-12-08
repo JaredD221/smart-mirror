@@ -7,46 +7,65 @@ const APIKEY = import.meta.env.PUBLIC_WEATHER_API;
 
 // API endpoint URL
 const queryEndpoint = 'https://api.openweathermap.org/data/2.5/weather';
-// City
-const queryCity = 'Cheney';
-// Units for Farenheit
-const queryUnits = 'imperial';
-
-// URL query string
-const url = `${queryEndpoint}?q=${queryCity}&appid=${APIKEY}&units=${queryUnits}`;
+// Units for Fahrenheit
+let queryUnits = 'imperial';
 
 // Get DOM Elements
 const city = document.querySelector('.city');
 const temp = document.querySelector('.temp');
 const icon = document.querySelector('.icon');
+const toggleButton = document.querySelector('.toggle-temp');
 
-// Using fetch to get data
-fetch(url)
-.then( response => response.json() )
-.then( data => {
+// Function to fetch weather data
+function fetchWeather(url) {
+  fetch(url)
+    .then(response => response.json())
+    .then(data => {
+      // Check-check: Is data good? 
+      console.log(data);
+      
+      // Set DOM Elements
+      city.textContent = data.name; 
+      temp.textContent = data.main.temp;
+      icon.setAttribute('src', `http://openweathermap.org/img/wn/${data.weather[0].icon}@2x.png`);
+    });
+}
 
-  // Check-check: Is data good? 
-  console.log( data );
-  
-  // Get Container for Weather   
-  const weatherContainer = document.querySelector('.weather');
-    
-    // Set DOM Elements
-    city.textContent = data.name; 
-    temp.textContent = data.main.temp;
+// Function to get user's location and fetch weather data
+function getUserLocation() {
+  if (navigator.geolocation) {
+    navigator.geolocation.getCurrentPosition(position => {
+      const lat = position.coords.latitude;
+      const lon = position.coords.longitude;
+      const url = `${queryEndpoint}?lat=${lat}&lon=${lon}&appid=${APIKEY}&units=${queryUnits}`;
+      fetchWeather(url);
+    });
+  } else {
+    console.error("Geolocation is not supported by this browser.");
+  }
+}
 
-    icon.setAttribute('src', `http://openweathermap.org/img/wn/${data.weather[0].icon}@2x.png`)
-  
+// Initial fetch based on user's location
+getUserLocation();
+
+// Toggle temperature units
+toggleButton.addEventListener('click', () => {
+  if (queryUnits === 'imperial') {
+    queryUnits = 'metric';
+    toggleButton.textContent = 'Switch to Fahrenheit';
+  } else {
+    queryUnits = 'imperial';
+    toggleButton.textContent = 'Switch to Celsius';
+  }
+  getUserLocation(); // Fetch weather data again with updated units
 });
 </script>
 
-
 <!-- Weather -->
-<section class="weather">
-
-      <h1>Weather</h1>
-      <data class="city">City</data>
-      <data class="temp">Temp</data>
-      <img class="icon" src="https://via.placeholder.com/150" alt="Placeholder">
-      
+<section class="weather card">
+  <h1>Weather</h1>
+  <div class="city">City</div>
+  <div class="temp">Temp</div>
+  <img class="icon" src="" alt="Weather Icon">
+  <button class="toggle-temp">Switch to Celsius</button>
 </section>
