@@ -2,62 +2,65 @@
 ---
 
 <script>
-// Get API key from server side .ENV file
-const APIKEY = import.meta.env.PUBLIC_WEATHER_API;
+// Ensure the script runs after the DOM is fully loaded
+document.addEventListener('DOMContentLoaded', () => {
+  // Get API key from server side .ENV file
+  const APIKEY = import.meta.env.PUBLIC_WEATHER_API;
 
-// API endpoint URL
-const queryEndpoint = 'https://api.openweathermap.org/data/2.5/weather';
-// Units for Fahrenheit
-let queryUnits = 'imperial';
+  // API endpoint URL
+  const queryEndpoint = 'https://api.openweathermap.org/data/2.5/weather';
+  // Units for Fahrenheit
+  let queryUnits = 'imperial';
 
-// Get DOM Elements
-const city = document.querySelector('.city');
-const temp = document.querySelector('.temp');
-const icon = document.querySelector('.icon');
-const toggleButton = document.querySelector('.toggle-temp');
+  // Get DOM Elements
+  const city = document.querySelector('.city');
+  const temp = document.querySelector('.temp');
+  const icon = document.querySelector('.icon');
+  const toggleButton = document.querySelector('.toggle-temp');
 
-// Function to fetch weather data
-function fetchWeather(url) {
-  fetch(url)
-    .then(response => response.json())
-    .then(data => {
-      // Check-check: Is data good? 
-      console.log(data);
-      
-      // Set DOM Elements
-      city.textContent = data.name; 
-      temp.textContent = data.main.temp;
-      icon.setAttribute('src', `http://openweathermap.org/img/wn/${data.weather[0].icon}@2x.png`);
-    });
-}
-
-// Function to get user's location and fetch weather data
-function getUserLocation() {
-  if (navigator.geolocation) {
-    navigator.geolocation.getCurrentPosition(position => {
-      const lat = position.coords.latitude;
-      const lon = position.coords.longitude;
-      const url = `${queryEndpoint}?lat=${lat}&lon=${lon}&appid=${APIKEY}&units=${queryUnits}`;
-      fetchWeather(url);
-    });
-  } else {
-    console.error("Geolocation is not supported by this browser.");
+  // Function to fetch weather data
+  function fetchWeather(url) {
+    fetch(url)
+      .then(response => response.json())
+      .then(data => {
+        // Check-check: Is data good? 
+        console.log(data);
+        
+        // Set DOM Elements
+        city.textContent = data.name; 
+        temp.textContent = data.main.temp;
+        icon.setAttribute('src', `http://openweathermap.org/img/wn/${data.weather[0].icon}@2x.png`);
+      });
   }
-}
 
-// Initial fetch based on user's location
-getUserLocation();
-
-// Toggle temperature units
-toggleButton.addEventListener('click', () => {
-  if (queryUnits === 'imperial') {
-    queryUnits = 'metric';
-    toggleButton.textContent = 'Switch to Fahrenheit';
-  } else {
-    queryUnits = 'imperial';
-    toggleButton.textContent = 'Switch to Celsius';
+  // Function to get user's location and fetch weather data
+  function getUserLocation() {
+    if (navigator.geolocation) {
+      navigator.geolocation.getCurrentPosition(position => {
+        const lat = position.coords.latitude;
+        const lon = position.coords.longitude;
+        const url = `${queryEndpoint}?lat=${lat}&lon=${lon}&appid=${APIKEY}&units=${queryUnits}`;
+        fetchWeather(url);
+      });
+    } else {
+      console.error("Geolocation is not supported by this browser.");
+    }
   }
-  getUserLocation(); // Fetch weather data again with updated units
+
+  // Initial fetch based on user's location
+  getUserLocation();
+
+  // Toggle temperature units
+  toggleButton.addEventListener('click', () => {
+    if (queryUnits === 'imperial') {
+      queryUnits = 'metric';
+      toggleButton.textContent = 'Switch to Fahrenheit';
+    } else {
+      queryUnits = 'imperial';
+      toggleButton.textContent = 'Switch to Celsius';
+    }
+    getUserLocation(); // Fetch weather data again with updated units
+  });
 });
 </script>
 
